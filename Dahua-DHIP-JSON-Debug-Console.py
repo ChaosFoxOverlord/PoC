@@ -51,6 +51,11 @@ Device Type: Dahua IPC-HDBW1320E-W
 System Version: 2.400.0000000.16.R, Build Date: 2017-08-31
 
 """
+"""
+Modification by CFOV 2021:
+Add a PoC to set Configuration Items which sets DHCPv6, using:
+Cmd: 'config_test_vt'
+"""
 
 import sys
 import json
@@ -954,7 +959,7 @@ class Dahua_Functions:
 		cmd = msg.split()
 
 		if len(cmd) == 1:
-			log.failure("Usage: show / set / get / del")
+			log.failure("Usage: show / set / get / del / config_test_vt")
 			return 
 
 		if cmd[1] == 'set' or cmd[1] == 'show':
@@ -1022,6 +1027,31 @@ class Dahua_Functions:
 			result = json.loads(result)
 			print json.dumps(result,indent=4)
 
+		# Config Test config_test_vt PoC: Enable DHCPv6
+		elif cmd[1] == 'config_test_vt':
+			query_args = {
+			"method":"configManager.setConfig",
+			"params":{
+				"table":{
+					"Enable":True,
+					"eth0":{
+						"DhcpEnable":True
+					}
+				},
+				"name":"IPv6"
+			},
+			"session":self.SessionID,
+			"id":self.ID
+			}
+
+			log.info("query: {} ".format(query_args))
+
+			result, LEN = self.P2P(json.dumps(query_args))
+			if not LEN:
+				return
+			result = json.loads(result)
+			print json.dumps(result,indent=4)
+		# Config Test config_test_vt PoC END
 		else:
 			log.failure("Usage: show / set / get / del")
 			return 
